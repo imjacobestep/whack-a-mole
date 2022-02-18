@@ -5,12 +5,17 @@
 #Import libraries
 import RPi.GPIO as GPIO
 import random
+import time
 from time import sleep
 import busio
 import digitalio
 import board
 import adafruit_mcp3xxx.mcp3008 as MCP
 from adafruit_mcp3xxx.analog_in import AnalogIn
+import numpy as np
+import heartpy as hp
+from scipy.signal import resample
+import matplotlib.pyplot as plt
 
 # Hide warnings.
 GPIO.setwarnings(False)
@@ -40,8 +45,8 @@ pins = [
 
 ## Functions ##
 
-def get_ppg():
-  start = time.time()
+def get_ppg(record_time):
+  start_time = time.time()
   time_data = []
   hr_data = []
 # record data
@@ -54,7 +59,7 @@ def get_ppg():
     time_data.append(time.time())
 # process data
   data_arr = np.array(hr_data)
-  filtered = hp.remove_baseline_wander(data_arr, sample_rate)
+  filtered = hp.remove_baseline_wander(data_arr, sample_rate=50)
   scaled = hp.scale_data(filtered)
   resampled = resample(scaled, len(scaled) * 4)
   enhanced = hp.enhance_ecg_peaks(resampled, sample_rate=50, aggregation='median', iterations=4)
