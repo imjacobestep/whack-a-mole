@@ -1,7 +1,16 @@
+## Dependencies
+# pip3 install adafruit-circuitpython-busdevice
+# pip3 install adafruit-circuitpython-mcp3xxx
+
 #Import libraries
 import RPi.GPIO as GPIO
 import random
 from time import sleep
+import busio
+import digitalio
+import board
+import adafruit_mcp3xxx.mcp3008 as MCP
+from adafruit_mcp3xxx.analog_in import AnalogIn
 
 # Hide warnings.
 GPIO.setwarnings(False)
@@ -10,6 +19,11 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
 ## Set up variables ##
+
+spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI) # create the spi bus
+cs = digitalio.DigitalInOut(board.D5) # create the cs (chip select)
+mcp = MCP.MCP3008(spi, cs) # create the mcp object
+chan = AnalogIn(mcp, MCP.P0) # create an analog input channel on pin 0
 
 # Use a list to store the pins used by the buttons
 # Because we need to compare the button pressed to
@@ -23,6 +37,30 @@ pins = [
 [8, 4], # White LED, White button
 [22,27]
 ]
+
+## Functions ##
+
+def get_ppg():
+  start = time.time()
+  time_data = []
+  hr_data = []
+# record data
+  while time.time() - start_time < record_time:
+    try:
+      # hr_data.append( float( ser.readline().decode.rstrip() ) )
+      hr_data.append(chan.value)
+    except:
+      hr_data.append(0)
+    time_data.append(time.time())
+# process data
+  data_arr = np.array(hr_data)
+  filtered = hp.remove_baseline_wander(data_arr, sample_rate)
+  scaled = hp.scale_data(filtered)
+  resampled = resample(scaled, len(scaled) * 4)
+  enhanced = hp.enhance_ecg_peaks(resampled, sample_rate=50, aggregation='median', iterations=4)
+  data, timer = enhanced, time_data
+  wd, m = hp.process(data, sample_rate = 50.0)
+  return m
 
 ## Initialise LED and button pins ##
 
