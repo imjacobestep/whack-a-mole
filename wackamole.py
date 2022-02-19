@@ -4,13 +4,13 @@
 
 #Import libraries
 import RPi.GPIO as GPIO
-import adafruit_mcp3xxx.mcp3008 as MCP
-# import Adafruit_MCP3008
-from adafruit_mcp3xxx.analog_in import AnalogIn
+import Adafruit_MCP3008
 import numpy as np
 import heartpy as hp
 from scipy.signal import resample
-import matplotlib.pyplot as plt
+import time
+from time import sleep
+import random
 
 # Hide warnings.
 GPIO.setwarnings(False)
@@ -20,12 +20,7 @@ GPIO.setmode(GPIO.BCM)
 
 ## Set up variables ##
 
-# spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI) # create the spi bus
-# cs = digitalio.DigitalInOut(board.D5) # create the cs (chip select)
-# mcp = MCP.MCP3008(spi, cs) # create the mcp object
-# mcp = Adafruit_MCP3008.MCP3008(clk=13, cs=12, miso=6, mosi=5) #using specific import
-mcp = MCP(clk=13, cs=12, miso=6, mosi=5) #using generic import
-chan = AnalogIn(mcp, MCP.P0) # create an analog input channel on pin 0
+mcp = Adafruit_MCP3008.MCP3008(clk=13, cs=12, miso=6, mosi=5)
 
 # Use a list to store the pins used by the buttons
 # Because we need to compare the button pressed to
@@ -42,6 +37,9 @@ pins = [
 
 ## Functions ##
 
+def getADC():
+	return mcp.read_adc(0)
+
 def get_ppg(record_time):
   start_time = time.time()
   time_data = []
@@ -50,7 +48,7 @@ def get_ppg(record_time):
   while time.time() - start_time < record_time:
     try:
       # hr_data.append( float( ser.readline().decode.rstrip() ) )
-      hr_data.append(chan.value)
+      hr_data.append(getADC())
     except:
       hr_data.append(0)
     time_data.append(time.time())
