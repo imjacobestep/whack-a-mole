@@ -4,13 +4,8 @@
 
 #Import libraries
 import RPi.GPIO as GPIO
-import random
-import time
-from time import sleep
-import busio
-import digitalio
-import board
 import adafruit_mcp3xxx.mcp3008 as MCP
+import Adafruit_MCP3008
 from adafruit_mcp3xxx.analog_in import AnalogIn
 import numpy as np
 import heartpy as hp
@@ -25,9 +20,10 @@ GPIO.setmode(GPIO.BCM)
 
 ## Set up variables ##
 
-spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI) # create the spi bus
-cs = digitalio.DigitalInOut(board.D5) # create the cs (chip select)
-mcp = MCP.MCP3008(spi, cs) # create the mcp object
+# spi = busio.SPI(clock=board.SCK, MISO=board.MISO, MOSI=board.MOSI) # create the spi bus
+# cs = digitalio.DigitalInOut(board.D5) # create the cs (chip select)
+# mcp = MCP.MCP3008(spi, cs) # create the mcp object
+mcp = Adafruit_MCP3008.MCP3008(clk=13, cs=12, miso=6, mosi=5)
 chan = AnalogIn(mcp, MCP.P0) # create an analog input channel on pin 0
 
 # Use a list to store the pins used by the buttons
