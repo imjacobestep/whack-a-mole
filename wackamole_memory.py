@@ -45,6 +45,8 @@ while True:
 	speed = 10
 	# Set number of goes per game
 	runTimes = 5
+	#Store Reaction Times
+	reaction_times = []
 
 	# Play the game
 	for molePopup in range(runTimes):
@@ -52,10 +54,13 @@ while True:
 		randomNumber = random.randint(0, 4) #maybe
 		# Light the LED
 		GPIO.output(pins[randomNumber][0],GPIO.HIGH)
+		light_time = time.time()
 		# Light the LED for (0.1 * speed) seconds, since i loops of speed running sleep(0.1)
 		for i in range(speed):
 			# Check if the correct button is pressed
 			if GPIO.input(pins[randomNumber][1]) == True:
+				reaction_time = time.time() - light_time()
+				reaction_times.append(reaction_time)
 				# Increase score and turn off LED
 				score = score + 1
 				GPIO.output(pins[randomNumber][0],GPIO.LOW)
@@ -68,7 +73,7 @@ while True:
 
 		# Increase the speed by reducing the number of times the button is checked for a press
 		# speed = speed - 1
-
+	print("Average Reaction Time:", np.mean(reaction_times))
 	print("Game over. You scored ", score, "out of ", runTimes)
 	input("Press ENTER to play memory game")
 
