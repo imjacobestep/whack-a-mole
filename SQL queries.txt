@@ -1,0 +1,30 @@
+## Creating sessions table
+
+create table session
+(
+	session_id	int(5)	PRIMARY KEY,
+	user_name	VARCHAR(30),
+	avg_reaction	DECIMAL(4,6),
+	mole_score	INT(2),
+	mem_1_score	INT(2),
+	mem_2_score	INT(2),
+	mem_3_score	INT(2),
+	cog_score	INT(2)
+);
+
+## Fetching data from table based on user name
+
+SELECT *
+FROM session
+WHERE user_name = "input name"
+ORDER BY session_id
+
+## Fetching data from table based on session
+
+SELECT *
+FROM session
+WHERE session_id = "input ID"
+
+## Insert new row into database
+
+INSERT INTO session VALUES(00000, "Jane Doe", 1.4, 46, 3, 4, 6, 26)
