@@ -4,43 +4,20 @@
 create table session
 (
 	session_id	INT(5)	PRIMARY KEY,
-	user_name	VARCHAR(30),
 	avg_reaction	DECIMAL(4,6),
 	mole_score	INT(2),
 	mem_1_score	INT(2),
 	mem_2_score	INT(2),
 	mem_3_score	INT(2),
-	ppg_id	INT(5),
 	hr_data	INT(5),
 	cog_score	INT(2),
-	FOREIGN KEY (ppg_id)
-		references ppg (ppg_id)
 );
 
-# ppg table
-create table ppg
-(
-	reading_id	INT(5)	PRIMARY KEY,
-	ppg_id	INT(5),
-	reading	INT(5),
-)
-
-## INSERTS ##
+## INSERTS / UPDATES ##
 
 # insert new session
 INSERT INTO session (user_name, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, ppg_id)
 VALUES(userName, avgReact, moleScore, m1Score, m2Score, m3Score, latestPPG)
-
-# insert new ppg reading (ppgID is a random int calculated at the beginning of each session)
-INSERT INTO ppg (ppg_id, reading)
-VALUES(ppgID, newReading)
-
-## UDPATES ##
-
-# update heart rate after feature extraction
-UPDATE sessions
-SET hr_data = ppgFeature
-WHERE session_id = sessionID;
 
 # update prediction
 UPDATE sessions
@@ -49,23 +26,7 @@ WHERE session_id = sessionID;
 
 ## QUERIES ##
 
-# get top from ppg
-SELECT TOP (1)
-ppg_id
-FROM ppg
-
-# get all from ppg by ppg_id
-SELECT *
-FROM ppg
-WHERE ppg.ppg_id = input_id
-
 # get all from session table by session id
 SELECT *
 FROM session
 WHERE session.session_id = input_id
-
-# get all from session table by user name
-SELECT *
-FROM session
-WHERE session.user_name = input_name
-ORDER BY session_id
