@@ -4,6 +4,7 @@
 create table session
 (
 	session_id	INT(5)	PRIMARY KEY,
+	user_id	CHAR(15),
 	avg_reaction	DECIMAL(4,6),
 	mole_score	INT(2),
 	mem_1_score	INT(2),
@@ -16,8 +17,8 @@ create table session
 ## INSERTS / UPDATES ##
 
 # insert new session
-INSERT INTO session (user_name, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, ppg_id)
-VALUES(userName, avgReact, moleScore, m1Score, m2Score, m3Score, latestPPG)
+INSERT INTO session (user_id, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, ppg_id)
+VALUES(userID, avgReact, moleScore, m1Score, m2Score, m3Score, latestPPG)
 
 # update prediction
 UPDATE sessions
@@ -30,3 +31,9 @@ WHERE session_id = sessionID;
 SELECT *
 FROM session
 WHERE session.session_id = input_id
+
+# get all from session table by user id
+select *
+FROM session
+WHERE session.user_id = userID
+GROUP BY session_id

@@ -30,6 +30,7 @@ def wait(s):
 
 ## MAIN FUNCTION ##
 def main_task():
+    user_id = input("input userID")
     lock = threading.Lock()
 
     ppg = threading.Thread(target=ppg_reading, args=lock)
@@ -42,10 +43,10 @@ def main_task():
     processing.start()
     processing.join()
 
-    send_to_cloud(react= avg_reaction_time, mole1=mole_score, mem1=mem_score1, mem2=mem_score2, mem3=mem_score3, ppgF=ppg_feature)
+    send_to_cloud(userID= user_id, react= avg_reaction_time, mole1=mole_score, mem1=mem_score1, mem2=mem_score2, mem3=mem_score3, ppgF=ppg_feature)
 
 ## SEND TO CLOUD ## TODO
-def send_to_cloud(react, mole1, mem1, mem2, mem3, ppgF):
+def send_to_cloud(userID, react, mole1, mem1, mem2, mem3, ppgF):
     #do stuff
     pass
 
