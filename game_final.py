@@ -23,6 +23,7 @@ mem_score1 = 0
 mem_score2 = 0
 mem_score3 = 0
 ppg_feature = 0
+lcd = LCD()
 
 ## REPLAY ##
 def replay():
@@ -88,6 +89,7 @@ def send_to_cloud(userID, react, mole1, mem1, mem2, mem3, ppgF):
 
     queryVals = (userID, react, mole1, mem1, mem2, mem3, ppgF)
     cursor.execute(query, queryVals)
+    connection.commit()
     print("upload finished")
 
 ## GAME ## TODO
@@ -97,6 +99,7 @@ def play_game(lock):
     global mem_score1
     global mem_score2
     global mem_score3
+    global lcd
 
     pins = [[11, 18],[9, 15],[7, 14],[8, 4],[22,27]] #LED, Button format; Green, Yellow, Blue, White order
 
