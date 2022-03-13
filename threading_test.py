@@ -18,4 +18,4 @@ def main_task():
 
 if __name__ == "__main__":
     main_task()
-    print("{0}".format(x))
+    pass

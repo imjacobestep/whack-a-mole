@@ -1,7 +1,3 @@
-## tools to install
-# https://docs.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?redirectedfrom=MSDN&view=sql-server-ver15
-# pyodbc
-
 ## IMPORTS ##
 import serial
 import time
@@ -12,6 +8,7 @@ from rpi_lcd import LCD
 import random
 import RPi.GPIO as GPIO
 import pyodbc
+import sys
 
 ## SETUP ##
 GPIO.setwarnings(False) #hide warnings
@@ -27,6 +24,28 @@ mem_score2 = 0
 mem_score3 = 0
 ppg_feature = 0
 
+## REPLAY ##
+def replay():
+    global global_time_data
+    global global_hr_data
+    global avg_reaction_time
+    global mole_score
+    global mem_score1
+    global mem_score2
+    global mem_score3
+    global ppg_feature
+
+    global_time_data = []
+    global_hr_data = []
+    avg_reaction_time = 0
+    mole_score = 0
+    mem_score1 = 0
+    mem_score2 = 0
+    mem_score3 = 0
+    ppg_feature = 0
+
+    main_task()
+
 ## WAIT FUNCTION ##
 def wait(s):
     start = time.time()
@@ -35,12 +54,12 @@ def wait(s):
 
 ## MAIN FUNCTION ##
 def main_task():
-    user_id = input("input userID")
+    user_id = input("input userID: ")
     lock = threading.Lock()
 
-    ppg = threading.Thread(target=ppg_reading, args=lock)
-    game = threading.Thread(target=play_game, args=lock)
-    processing = threading.Thread(target=ppg_processing, args=lock)
+    ppg = threading.Thread(target=ppg_reading, args=(lock,))
+    game = threading.Thread(target=play_game, args=(lock,))
+    processing = threading.Thread(target=ppg_processing, args=(lock,))
 
     ppg.start()
     game.start()
@@ -52,16 +71,24 @@ def main_task():
 
 ## SEND TO CLOUD ## TODO
 def send_to_cloud(userID, react, mole1, mem1, mem2, mem3, ppgF):
+    print("uploading...")
     server = 'whack-a-mole.database.windows.net'
     database = 'sessions_db'
     username = 'whackamole'
     password = 'password123!'
-    driver = '{ODBC Driver 17 for SQL Server}'
-    connection = pyodbc.connect('DRIVER='+driver+';PORT=1433;SERVER='+server+';PORT=1443;DATABASE='+database+';UID='+username+';PWD='+ password)
+    driver = '/usr/lib/arm-linux-gnueabihf/odbc/libtdsodbc.so'
+    connection = pyodbc.connect('DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password + ';TDS_Version=8.0')
+
     cursor = connection.cursor()
 
-    queryVals = f"VALUES({userID},{react},{mole1},{mem1},{mem2},{mem3},{ppgF})"
-    cursor.execute(f"INSERT INTO sessions (user_id, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, hr_data) {queryVals}")
+    query = (
+        "INSERT INTO sessions(user_id, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, hr_data)"
+        "VALUES(?,?,?,?,?,?,?)"
+    )
+
+    queryVals = (userID, react, mole1, mem1, mem2, mem3, ppgF)
+    cursor.execute(query, queryVals)
+    print("upload finished")
 
 ## GAME ## TODO
 def play_game(lock):
@@ -75,6 +102,7 @@ def play_game(lock):
 
     for i in range(5): #setup LED pins
         GPIO.setup(pins[i][0], GPIO.OUT)
+        GPIO.output(pins[i][0],GPIO.LOW)
     for i in range(5): #setup button pins
         GPIO.setup(pins[i][1], GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 
@@ -86,6 +114,11 @@ def play_game(lock):
 
     reaction_times = []
     runTimes = 50
+    score = 0
+    score_1 = 0
+    score_2 = 0
+    score_3 = 0
+    score_4 = 0
     for molePopup in range(runTimes):
         speed = random.randint(4, 12) # randomise speed
         randomNumber = random.randint(0, 4) # choose random LED
@@ -181,11 +214,11 @@ def play_game(lock):
 
     # round 1
     score_2 = 0
-    solution_2 = []
+    results_2 = []
     randomNumber2_1 = random.randint(0, 4)
     randomNumber2_2 = random.randint(0, 4)
     randomNumber2_3 = random.randint(0, 4)
-    results_2 = [randomNumber2_1, randomNumber2_2, randomNumber2_3]
+    solution_2 = [randomNumber2_1, randomNumber2_2, randomNumber2_3]
     print("Round 1") #display round 1
     # lcd.clear()
     # lcd.text("Round 1", 1)
@@ -445,7 +478,7 @@ def play_game(lock):
     # lcd.text("Score:", 1)
     # lcd.text(str(score_4), 2)
 
-    lock.aquire()
+    lock.acquire()
     mem_score1 = score_2
     mem_score2 = score_3
     mem_score3 = score_4
@@ -455,7 +488,7 @@ def play_game(lock):
 def ppg_reading(lock):
     global global_time_data
     global global_hr_data
-    ser = serial.Serial('COM3', 57600)  #setting serial input port with comm speed
+    ser = serial.Serial('/dev/ttyACM0', 57600)  #setting serial input port with comm speed
     start_time = time.time()
 
     while True:
@@ -464,7 +497,7 @@ def ppg_reading(lock):
         string = string_n.rstrip() #remove \n and \r
         try:
             ppg = float(string)    # convert string to floatq
-            print(ppg)
+            #print(ppg)
         except:
             continue
         global_time_data.append(time.time() - start_time)
@@ -490,7 +523,7 @@ def ppg_processing(lock):
     #cut into chunks
     temp_data = []
     start = time_data[0]
-    for i in range(len(time_data)):
+    for i in range(len(filtered_hr)-1):
         if time_data[i] - start <= 20:
             temp_data.append(filtered_hr[i])
         else:
@@ -506,3 +539,8 @@ def ppg_processing(lock):
     #feature extraction on new list of BPMs
     hr_array = np.array(heart_rates)
     ppg_feature = np.std(a=hr_array)
+
+if __name__ == "__main__":
+    main_task()
+    while input("Press ENTER to play again: "):
+        replay()
