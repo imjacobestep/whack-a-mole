@@ -1,3 +1,7 @@
+## tools to install
+# https://docs.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server?redirectedfrom=MSDN&view=sql-server-ver15
+# pyodbc
+
 ## IMPORTS ##
 import serial
 import time
@@ -7,6 +11,7 @@ import threading
 from rpi_lcd import LCD
 import random
 import RPi.GPIO as GPIO
+import pyodbc
 
 ## SETUP ##
 GPIO.setwarnings(False) #hide warnings
@@ -47,8 +52,16 @@ def main_task():
 
 ## SEND TO CLOUD ## TODO
 def send_to_cloud(userID, react, mole1, mem1, mem2, mem3, ppgF):
-    #do stuff
-    pass
+    server = 'whack-a-mole.database.windows.net'
+    database = 'sessions_db'
+    username = 'whackamole'
+    password = 'password123!'
+    driver = '{ODBC Driver 17 for SQL Server}'
+    connection = pyodbc.connect('DRIVER='+driver+';PORT=1433;SERVER='+server+';PORT=1443;DATABASE='+database+';UID='+username+';PWD='+ password)
+    cursor = connection.cursor()
+
+    queryVals = f"VALUES({userID},{react},{mole1},{mem1},{mem2},{mem3},{ppgF})"
+    cursor.execute(f"INSERT INTO sessions (user_id, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, hr_data) {queryVals}")
 
 ## GAME ## TODO
 def play_game(lock):

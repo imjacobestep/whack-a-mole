@@ -1,24 +1,24 @@
 ## SETUP ##
 
 # session table
-create table session
+CREATE TABLE sessions
 (
-	session_id	INT(5)	PRIMARY KEY,
-	user_id	CHAR(15),
-	avg_reaction	DECIMAL(4,6),
-	mole_score	INT(2),
-	mem_1_score	INT(2),
-	mem_2_score	INT(2),
-	mem_3_score	INT(2),
-	hr_data	INT(5),
-	cog_score	INT(2),
+	session_id	INT	IDENTITY(1,1)	PRIMARY KEY,
+	user_id	VARCHAR(255),
+	avg_reaction	DECIMAL(10,6),
+	mole_score	INT,
+	mem_1_score	INT,
+	mem_2_score	INT,
+	mem_3_score	INT,
+	hr_data	INT,
+	cog_score	INT,
 );
 
 ## INSERTS / UPDATES ##
 
 # insert new session
-INSERT INTO session (user_id, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, ppg_id)
-VALUES(userID, avgReact, moleScore, m1Score, m2Score, m3Score, latestPPG)
+INSERT INTO session (user_id, avg_reaction, mole_score, mem_1_score, mem_2_score, mem_3_score, hr_data)
+VALUES(userID, avgReact, moleScore, m1Score, m2Score, m3Score, hrData)
 
 # update prediction
 UPDATE sessions
