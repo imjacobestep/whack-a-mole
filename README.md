@@ -12,10 +12,3 @@ scipy
 rpi_lcd
 RPi.GPIO
 pyodbc
-
-SQL database info:
-server = 'whack-a-mole.database.windows.net'
-database = 'sessions_db'
-username = 'whackamole'
-password = 'password123!'
-table = 'sessions'
